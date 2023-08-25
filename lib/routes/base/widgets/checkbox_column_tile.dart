@@ -38,7 +38,7 @@ class CheckboxColumnTile extends StatelessWidget {
                 label,
                 style: value ? Theme.of(context).textTheme.bodyLarge : null,
               ),
-            )
+            ),
           ],
         ),
       ),

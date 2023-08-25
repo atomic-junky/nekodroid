@@ -2,43 +2,43 @@
   "@@locale": "en",
   "localeDisplayName": "English",
 
-  
+
   "appTitle": "Nekodoid",
 
-  
+
   "home": "Home",
   "homeLatestEps": "Latest episodes",
   "homeSeasonalAnimes": "Seasonal animes",
   "homePopularAnimes": "Popular animes",
 
-  
+
   "library": "Library",
   "libraryHistory": "History",
   "libraryEmptyHistory": "The history is empty",
   "libraryFavorites": "Favorites",
   "libraryEmptyFavorites": "No favorites",
 
-  
+
   "search": "Search",
   "searchNoResults": "No results",
-  
-  
+
+
   "more": "More",
   "morePrivateBrowsing": "Private browsing",
   "morePrivateBrowsingDescription": "Pauses navigation history",
-  
-  
+
+
   "statistics": "Statistics",
-  
-  
+
+
   "backupRestore": "Backup & restore",
 
-  
+
   "settings": "Settings",
-  
+
   "settingsGeneral": "General",
   "settingsTheme": "Theme",
-  "settingsThemes": "{theme, select, system{Device} dark{Dark} light{Light}}",
+  "settingsThemes": "{theme, select, system{Device} dark{Dark} light{Light} other{theme}}",
   "@settingsThemes": {
     "placeholders": {
       "theme": {
@@ -50,7 +50,7 @@
   "settingsLocale": "Language",
   "settingsDeviceLocale": "Device language",
   "settingsNavLabel": "Navigation labels",
-  "settingsNavLabels": "{navLabel, select, all{Always active} onlySelected{Only on selected} disabled{Never active}}",
+  "settingsNavLabels": "{navLabel, select, all{Always active} onlySelected{Only on selected} disabled{Never active} other{navLabel}}",
   "@settingsNavLabels": {
     "placeholders": {
       "navLabel": {
@@ -59,44 +59,44 @@
     }
   },
   "settingsDefaultPage": "Default page",
-  
+
   "carouselItemCount": "Carousel item count",
-  
+
   "blurThumbs": "Blur thumbnails",
   "blurThumbsSigma": "Blur intensity",
   "blurThumbsShowSwitch": "Show blur thumbnails switch",
-  
+
   "settingsAdvanced": "Advanced",
-  
+
   "settingsUpdate": "Update",
-  
+
   "settingsAbout": "About",
-  
-  
+
+
   "anime": "Anime",
   "animeNoSynopsis": "No synopsis.",
   "animeUnknownEpDuration": "Unknown duration",
-  
-  
+
+
   "player": "Player",
   "playerConfirmExit": "Press again to exit",
   "playerPlaybackSpeed": "Playback speed",
   "playerQuality": "Quality",
-  "playerEpStatus": "{success, select, true{Episode {epNumber} marked as completed} false{Episode {epNumber} is already marked as completed}}",
+  "playerEpStatus": "{success, select, true{Episode {epNumber} marked as completed} false{Episode {epNumber} is already marked as completed} other{}}",
   "@playerEpStatus": {
     "placeholders": {
       "success": {
-        "type": "bool"
+        "type": "String"
       },
       "epNumber": {
         "type": "int"
       }
     }
   },
-  
-  
+
+
   "genre": "Genre",
-  "genres": "{genre, select, action{action} adventure{adventure} comedy{comedy} drama{drama} ecchi{ecchi} fantasy{fantasy} hentai{hentai} horror{horror} magicalGirl{magical girl} mecha{mecha} music{music} mystery{mystery} psychological{psychological} romance{romance} sciFi{sci-fi} sliceOfLife{slice of life} sports{sports} supernatural{supernatural} thriller{thriller}}",
+  "genres": "{genre, select, action{action} adventure{adventure} comedy{comedy} drama{drama} ecchi{ecchi} fantasy{fantasy} hentai{hentai} horror{horror} magicalGirl{magical girl} mecha{mecha} music{music} mystery{mystery} psychological{psychological} romance{romance} sciFi{sci-fi} sliceOfLife{slice of life} sports{sports} supernatural{supernatural} thriller{thriller} other{}}",
   "@genres": {
     "placeholders": {
       "genre": {
@@ -104,9 +104,9 @@
       }
     }
   },
-  
+
   "format": "Format",
-  "formats": "{format, select, movie{Movie} ova{OVA} special{Special} tv{TV}}",
+  "formats": "{format, select, movie{Movie} ova{OVA} special{Special} tv{TV} other{}}",
   "@formats": {
     "placeholders": {
       "format": {
@@ -114,9 +114,9 @@
       }
     }
   },
-  
+
   "status": "Status",
-  "statuses": "{status, select, aired{Aired} airing{Airing} planned{Planned}}",
+  "statuses": "{status, select, aired{Aired} airing{Airing} planned{Planned} other{}}",
   "@statuses": {
     "placeholders": {
       "status": {
@@ -124,7 +124,7 @@
       }
     }
   },
-  
+
 
   "episodeShort": "Ep {count}",
   "@episodeShort": {
@@ -142,7 +142,7 @@
       }
     }
   },
-  
+
   "episodeCountShort": "{count, plural, zero{? eps} one{1 ep} other{{count} eps}}",
   "@episodeCountShort": {
     "placeholders": {
@@ -159,8 +159,8 @@
       }
     }
   },
-  
-  
+
+
   "hoursShort": "{count} h",
   "@hoursShort": {
     "placeholders": {
@@ -177,7 +177,7 @@
       }
     }
   },
-  
+
   "minutesShort": "{count, plural, one{1 min} other{{count} mins}}",
   "@minutesShort": {
     "placeholders": {
@@ -211,21 +211,21 @@
       }
     }
   },
-  
-  
-  "monthsShort": "{month, select, 1{Jan} 2{Feb} 3{Mar} 4{Apr} 5{May} 6{Jun} 7{Jul} 8{Aug} 9{Sep} 10{Oct} 11{Nov} 12{Dec}}",
+
+
+  "monthsShort": "{month, select, 1{Jan} 2{Feb} 3{Mar} 4{Apr} 5{May} 6{Jun} 7{Jul} 8{Aug} 9{Sep} 10{Oct} 11{Nov} 12{Dec} other{}}",
   "@monthsShort": {
     "placeholders": {
       "month": {
-        "type": "int"
+        "type": "String"
       }
     }
   },
-  "monthsLong": "{month, select, 1{January} 2{February} 3{March} 4{April} 5{May} 6{June} 7{July} 8{August} 9{September} 10{October} 11{November} 12{December}}",
+  "monthsLong": "{month, select, 1{January} 2{February} 3{March} 4{April} 5{May} 6{June} 7{July} 8{August} 9{September} 10{October} 11{November} 12{December} other{}}",
   "@monthsLong": {
     "placeholders": {
       "month": {
-        "type": "int"
+        "type": "String"
       }
     }
   }

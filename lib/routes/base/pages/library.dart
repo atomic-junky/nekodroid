@@ -9,10 +9,10 @@ class LibraryPage extends StatelessWidget {
   const LibraryPage({super.key});
 
   @override
-  Widget build(BuildContext context) => DefaultTabController(
+  Widget build(BuildContext context) => const DefaultTabController(
     length: 2,
     child: Stack(
-      children: const [
+      children: [
         LibraryTabview(),
         Align(
           alignment: Alignment.topCenter,

@@ -3,7 +3,7 @@
 // @description  Launches the player by trying to press play.
 // @version      1.0.0
 // @author       zkayia
-// @match        https://www.pstream.net/e/*
+// @match        https://www.fusevideo.io/e/*
 // @run-at       document-body
 // @grant        none
 // ==/UserScript==
@@ -15,21 +15,31 @@
 const maxAttemps = 10;
 
 function clickPlayButton(currentAttempts, resolve, reject) {
+	console.log("nekodroid_data:clickPlayButton");
+	// console.log(document.documentElement.outerHTML);
 	document.querySelector(".jw-icon.jw-icon-display.jw-button-color.jw-reset")?.click();
 	setTimeout(() => {
-		if ((document.getElementById("main-player").classList.contains("jw-state-idle"))) {
-			if (currentAttempts >= maxAttemps) {
-				return reject();
-			}
-			return clickPlayButton(currentAttempts + 1, resolve, reject);
-		};
-		resolve();
+		if (!document.getElementById("main-player")) {
+			return reject();
+		}
+		if (document.getElementById("main-player").classList.contains("jw-state-idle")) {
+			return reject();
+		}
+		return resolve();	
 	}, 500);
 };
 
 window.addEventListener("load", async () => {
-	
-	await new Promise((resolve, reject) => clickPlayButton(0, resolve, reject));
+	console.log("nekodroid_data:launch_player");
+
+	await clickPlayButton(0, () => {
+		console.log("nekodroid_data:clickPlayButton:resolved");
+	}, () => {
+		console.log("nekodroid_data:clickPlayButton:rejected");
+	});
+
+
+	// await new Promise((resolve, reject) => clickPlayButton(0, resolve, reject));
 
 	[
 		...document.querySelectorAll("#jw-settings-submenu-quality button"),

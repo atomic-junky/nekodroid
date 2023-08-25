@@ -1,5 +1,5 @@
-
 import 'package:boxicons/boxicons.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -16,11 +16,9 @@ import 'package:nekodroid/widgets/generic_button.dart';
 import 'package:nekodroid/widgets/generic_cached_image.dart';
 import 'package:nekodroid/widgets/labelled_icon.dart';
 import 'package:nekodroid/widgets/large_icon.dart';
-import 'package:nekosama_dart/nekosama_dart.dart';
-
+import 'package:nekosama_hive/nekosama_hive.dart';
 
 class LibraryTabview extends ConsumerWidget {
-
   const LibraryTabview({super.key});
 
   @override
@@ -38,23 +36,25 @@ class LibraryTabview extends ConsumerWidget {
               final reverseIndex = box.length - 1 - index;
               final episode = NSEpisode.fromJson(box.getAt(reverseIndex)!);
               return ref.watch(animeProvider(episode.animeUrl)).when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stackTrace) => const Center(child: Icon(Boxicons.bxs_error_circle)),
-                data: (data) => AnimeListTile(
-                  title: data.title,
-                  subtitle: DateTime.fromMillisecondsSinceEpoch(
-                    // will break on: `2106-02-07 07:28:15.000`
-                    box.keyAt(reverseIndex) * 1000,
-                  ).formatHistory(context),
-                  leading: AnimeCard(
-                    image: GenericCachedImage(data.thumbnail),
-                    badge: context.tr.episodeShort(episode.episodeNumber),
-                    onImageTap: () =>
-                      Navigator.of(context).pushNamed("/anime", arguments: data.url),
-                  ),
-                  onTap: () {}, //TODO: open detailled history page
-                ),
-              );
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, stackTrace) =>
+                        const Center(child: Icon(Boxicons.bxs_error_circle)),
+                    data: (data) => AnimeListTile(
+                      title: data.title,
+                      subtitle: DateTime.fromMillisecondsSinceEpoch(
+                        // will break on: `2106-02-07 07:28:15.000`
+                        box.keyAt(reverseIndex) * 1000,
+                      ).formatHistory(context),
+                      leading: AnimeCard(
+                        image: GenericCachedImage(data.thumbnail),
+                        badge: context.tr.episodeShort(episode.episodeNumber),
+                        onImageTap: () => Navigator.of(context)
+                            .pushNamed("/anime", arguments: data.url),
+                      ),
+                      onTap: () {}, //TODO: open detailled history page
+                    ),
+                  );
             },
             placeholder: LabelledIcon.vertical(
               icon: const LargeIcon(Boxicons.bx_history),
@@ -64,32 +64,44 @@ class LibraryTabview extends ConsumerWidget {
         ),
         AnimeListview(
           itemCount: favorites.length,
-          itemBuilder: (context, index) => ref.watch(
-            animeProvider(favorites.elementAt(index).key),
-          ).when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, stackTrace) => const Center(child: Icon(Boxicons.bxs_error_circle)),
-            data: (anime) => AnimeListTile(
-              title: anime.title,
-              subtitle: animeDataText(context, anime),
-              leading: AnimeCard(image: GenericCachedImage(anime.thumbnail)),
-              trailing: GenericButton.elevated(
-                onPressed: () => ref.read(favoritesProvider.notifier).toggleFavBoxOnly(
-                  anime.url,
-                  DateTime.now(),
-                  anime,
+          itemBuilder: (context, index) => ref
+              .watch(
+                animeProvider(favorites.elementAt(index).key),
+              )
+              .when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stackTrace) {
+                  if (kDebugMode) {
+                    print(err);
+                    print(stackTrace);
+                  }
+                  return const Center(child: Icon(Boxicons.bxs_error_circle));
+                },
+                data: (anime) => AnimeListTile(
+                  title: anime.title,
+                  subtitle: animeDataText(context, anime),
+                  leading:
+                      AnimeCard(image: GenericCachedImage(anime.thumbnail)),
+                  trailing: GenericButton.elevated(
+                    onPressed: () =>
+                        ref.read(favoritesProvider.notifier).toggleFavBoxOnly(
+                              anime.url,
+                              DateTime.now(),
+                              anime,
+                            ),
+                    child: ref
+                            .watch(favoritesProvider.notifier)
+                            .isFavoritedBox(anime.url)
+                        ? const Icon(
+                            Boxicons.bxs_heart,
+                            color: Colors.red,
+                          )
+                        : const Icon(Boxicons.bx_heart),
+                  ),
+                  onTap: () => Navigator.of(context)
+                      .pushNamed("/anime", arguments: anime.url),
                 ),
-                child: ref.watch(favoritesProvider.notifier).isFavoritedBox(anime.url)
-                  ? const Icon(
-                    Boxicons.bxs_heart,
-                    color: Colors.red,
-                  )
-                  : const Icon(Boxicons.bx_heart),
               ),
-              onTap: () =>
-                Navigator.of(context).pushNamed("/anime", arguments: anime.url),
-            ),
-          ),
           onRefresh: () async => ref.refresh(favoritesProvider),
           placeholder: LabelledIcon.vertical(
             icon: const LargeIcon(Boxicons.bx_heart),

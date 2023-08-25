@@ -1,19 +1,17 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:nekosama_dart/nekosama_dart.dart';
+import 'package:nekosama_hive/nekosama_hive.dart';
 
-
-final historyProvider = StateNotifierProvider<_HistoryProviderNotifier, Box<Map>>(
+final historyProvider =
+    StateNotifierProvider<_HistoryProviderNotifier, Box<Map>>(
   (ref) => _HistoryProviderNotifier(Hive.box<Map>("history")),
 );
 
 class _HistoryProviderNotifier extends StateNotifier<Box<Map>> {
-
   final _recentHistoryBox = Hive.box<String>("recent-history");
   final _animeCacheBox = Hive.box<String>("anime-cache");
   final _favoritesBox = Hive.box<int>("favorites");
-  
+
   _HistoryProviderNotifier(Box<Map> initialState) : super(initialState);
 
   @override
@@ -56,19 +54,25 @@ class _HistoryProviderNotifier extends StateNotifier<Box<Map>> {
     String animeJson,
     NSEpisode episode,
     int completedTimestamp,
-  ) => state.get(
-    episode.animeUrl.toString(),
-  )?.cast<int, int>().containsKey(episode.episodeNumber) ?? false
-      ? removeEntry(animeJson, episode)
-      : addEntry(animeJson, episode, completedTimestamp);
-    // await _recentHistoryBox.delete(
-    //     _recentHistoryBox.toMap().entries.firstWhere(
-    //     (element) => element.value == episodeJson,
-    //     orElse: () => const MapEntry(null, ""),
-    //   ).key,
-    // );
+  ) =>
+      state
+                  .get(
+                    episode.animeUrl.toString(),
+                  )
+                  ?.cast<int, int>()
+                  .containsKey(episode.episodeNumber) ??
+              false
+          ? removeEntry(animeJson, episode)
+          : addEntry(animeJson, episode, completedTimestamp);
+  // await _recentHistoryBox.delete(
+  //     _recentHistoryBox.toMap().entries.firstWhere(
+  //     (element) => element.value == episodeJson,
+  //     orElse: () => const MapEntry(null, ""),
+  //   ).key,
+  // );
 
-  Future<void> _updateWith(String animeUrl, String animeJson, Map<int, int> data) async {
+  Future<void> _updateWith(
+      String animeUrl, String animeJson, Map<int, int> data) async {
     if (data.isNotEmpty) {
       await _animeCacheBox.put(animeUrl, animeJson);
       await state.put(animeUrl, data);

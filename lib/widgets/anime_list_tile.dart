@@ -70,7 +70,7 @@ class AnimeListTile extends StatelessWidget {
             if (trailing != null)
               ...[
                 const SizedBox(width: kPaddingMain),
-                trailing!
+                trailing!,
               ],
           ],
         ),

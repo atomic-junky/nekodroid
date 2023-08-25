@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:boxicons/boxicons.dart';
@@ -13,16 +12,9 @@ import 'package:nekodroid/widgets/labelled_icon.dart';
 import 'package:nekodroid/widgets/large_icon.dart';
 import 'package:video_player/video_player.dart';
 
-
 /* CONSTANTS */
 
-
-
-
 /* MODELS */
-
-
-
 
 /* PROVIDERS */
 
@@ -31,19 +23,14 @@ final _playerIsInitProvider = StateProvider.autoDispose<bool>(
 );
 
 final _playerValProvider = StateProvider.autoDispose<VideoPlayerValue>(
-  (ref) => VideoPlayerValue(duration: Duration.zero),
+  (ref) => const VideoPlayerValue(duration: Duration.zero),
 );
 
-
 /* MISC */
-
-
-
 
 /* WIDGETS */
 
 class NativePlayer extends ConsumerWidget {
-
   final PlayerRouteParameters playerRouteParameters;
   final Uri videoUrl;
   final void Function()? onPrevious;
@@ -58,26 +45,35 @@ class NativePlayer extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => ref.watch(
-    hlsProvider(HlsProviderData(videoUrl: videoUrl, assetBundle: DefaultAssetBundle.of(context))),
-  ).when(
-    loading: () => const CircularProgressIndicator(),
-    error: (err, stackTrace) => LabelledIcon.vertical(
-      icon: const LargeIcon(Boxicons.bxs_error_circle),
-      label: err.toString().split(":").last.trim(),
-    ),
-    data: (hlsStreams) => _VideoPlayer(
-      playerRouteParameters: playerRouteParameters,
-      hlsStreams: hlsStreams,
-      onPrevious: onPrevious,
-      onNext: onNext,
-    ),
-  );
+  Widget build(BuildContext context, WidgetRef ref) => ref
+      .watch(
+        hlsProvider(
+          HlsProviderData(
+            videoUrl: videoUrl,
+            assetBundle: DefaultAssetBundle.of(context),
+          ),
+        ),
+      )
+      .when(
+        loading: () => const CircularProgressIndicator(),
+        error: (err, stackTrace) {
+          debugPrint(err.toString());
+          debugPrint(stackTrace.toString());
+          return LabelledIcon.vertical(
+            icon: const LargeIcon(Boxicons.bxs_error_circle),
+            label: err.toString().split(":").last.trim(),
+          );
+        },
+        data: (hlsStreams) => _VideoPlayer(
+          playerRouteParameters: playerRouteParameters,
+          hlsStreams: hlsStreams,
+          onPrevious: onPrevious,
+          onNext: onNext,
+        ),
+      );
 }
 
-
 class _VideoPlayer extends ConsumerStatefulWidget {
-  
   final PlayerRouteParameters playerRouteParameters;
   final Map<String, File> hlsStreams;
   final void Function()? onPrevious;
@@ -95,7 +91,6 @@ class _VideoPlayer extends ConsumerStatefulWidget {
 }
 
 class _VideoPlayerState extends ConsumerState<_VideoPlayer> {
-  
   late VideoPlayerController controller;
 
   @override
@@ -115,14 +110,14 @@ class _VideoPlayerState extends ConsumerState<_VideoPlayer> {
   }
 
   void _controllerInit(File file, [Duration? startAt]) =>
-    controller = VideoPlayerController.file(file)
-      ..addListener(_controllerListener)
-      ..initialize().then((_) {
-        ref.read(_playerIsInitProvider.notifier).update((_) => true);
-        controller
-          ..seekTo(startAt ?? Duration.zero)
-          ..play();
-      });
+      controller = VideoPlayerController.file(file)
+        ..addListener(_controllerListener)
+        ..initialize().then((_) {
+          ref.read(_playerIsInitProvider.notifier).update((_) => true);
+          controller
+            ..seekTo(startAt ?? Duration.zero)
+            ..play();
+        });
 
   Duration _controllerDispose() {
     controller
@@ -133,7 +128,8 @@ class _VideoPlayerState extends ConsumerState<_VideoPlayer> {
 
   void _controllerListener() {
     ref.read(_playerValProvider.notifier).update((_) => controller.value);
-    ref.read(playerControlsProvider.notifier).isPlaying = controller.value.isPlaying;
+    ref.read(playerControlsProvider.notifier).isPlaying =
+        controller.value.isPlaying;
     if (controller.value.position >= controller.value.duration) {
       ref.read(playerControlsProvider.notifier).videoDone();
     }
@@ -150,21 +146,22 @@ class _VideoPlayerState extends ConsumerState<_VideoPlayer> {
       alignment: Alignment.center,
       children: [
         VideoPlayer(controller),
-        if (ref.watch(_playerIsInitProvider))
-          ...[
-            PlayerControls(
-              controller: controller,
-              playerValProvider: _playerValProvider,
-              qualities: widget.hlsStreams,
-              title: widget.playerRouteParameters.anime?.title ?? "",
-              subtitle: context.tr.episodeLong(widget.playerRouteParameters.episode.episodeNumber),
-              changeVideo: (newVid) => _controllerInit(newVid, _controllerDispose()),
-              onPrevious: widget.onPrevious,
-              onNext: widget.onNext,
+        if (ref.watch(_playerIsInitProvider)) ...[
+          PlayerControls(
+            controller: controller,
+            playerValProvider: _playerValProvider,
+            qualities: widget.hlsStreams,
+            title: widget.playerRouteParameters.anime?.title ?? "",
+            subtitle: context.tr.episodeLong(
+              widget.playerRouteParameters.episode.episodeNumber,
             ),
-            const PlayerControlsQuickSkipOverlay(),
-          ]
-        else
+            changeVideo: (newVid) =>
+                _controllerInit(newVid, _controllerDispose()),
+            onPrevious: widget.onPrevious,
+            onNext: widget.onNext,
+          ),
+          const PlayerControlsQuickSkipOverlay(),
+        ] else
           const Center(child: CircularProgressIndicator()),
       ],
     );

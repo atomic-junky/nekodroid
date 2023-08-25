@@ -97,7 +97,7 @@ class _GenericDialogState<T> extends State<GenericDialog> {
     switch (widget._type) {
       case _DialogType.checkbox:
         _value = [
-          ...widget.elements!.where((e) => e.selected).map((e) => e.value)
+          ...widget.elements!.where((e) => e.selected).map((e) => e.value),
         ];
         break;
       case _DialogType.radio:
@@ -140,7 +140,7 @@ class _GenericDialogState<T> extends State<GenericDialog> {
             ),
           ),
         ],
-      )
+      ),
     ],
     contentPadding: const EdgeInsets.symmetric(
       horizontal: kPaddingMain,

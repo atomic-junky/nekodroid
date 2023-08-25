@@ -1,5 +1,5 @@
-
 import 'package:boxicons/boxicons.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,21 +7,21 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:nekodroid/constants.dart';
 import 'package:nekodroid/extensions/app_localizations.dart';
 import 'package:nekodroid/provider/api.dart';
-import 'package:nekodroid/provider/history.dart';
-import 'package:nekodroid/routes/player/players/native/native.dart';
+// import 'package:nekodroid/provider/history.dart';
+// import 'package:nekodroid/routes/player/players/native/native.dart';
+import 'package:nekodroid/routes/player/players/native/providers/hls.dart';
+import 'package:nekodroid/routes/player/players/native/providers/webview.dart';
 import 'package:nekodroid/routes/player/players/webview.dart';
 import 'package:nekodroid/widgets/generic_route.dart';
 import 'package:nekodroid/widgets/large_icon.dart';
-import 'package:nekosama_dart/nekosama_dart.dart';
-
+import 'package:nekosama_hive/nekosama_hive.dart';
 
 /* CONSTANTS */
 
-enum PlayerType {webview, native}
+enum PlayerType { webview, native }
 
 // TODO: preferred quality setting
 enum Qualities {
-
   // Best available
   best("-1"),
   // Full HD 1080p
@@ -40,12 +40,10 @@ enum Qualities {
   const Qualities(this.value);
 }
 
-
 /* MODELS */
 
 @immutable
 class PlayerRouteParameters {
-
   final PlayerType playerType;
   final NSEpisode episode;
   final NSAnime? anime;
@@ -56,24 +54,24 @@ class PlayerRouteParameters {
     required this.episode,
     this.anime,
     this.currentIndex,
-  }): assert(
-    (anime == null && currentIndex == null)
-    || (anime != null && currentIndex != null),
-  );
+  }) : assert(
+          (anime == null && currentIndex == null) ||
+              (anime != null && currentIndex != null),
+        );
 
   PlayerRouteParameters copyWith({
     PlayerType? playerType,
     NSEpisode? episode,
     NSAnime? anime,
     int? currentIndex,
-  }) => PlayerRouteParameters(
-    playerType: playerType ?? this.playerType,
-    episode: episode ?? this.episode,
-    anime: anime ?? this.anime,
-    currentIndex: currentIndex ?? this.currentIndex,
-  );
+  }) =>
+      PlayerRouteParameters(
+        playerType: playerType ?? this.playerType,
+        episode: episode ?? this.episode,
+        anime: anime ?? this.anime,
+        currentIndex: currentIndex ?? this.currentIndex,
+      );
 }
-
 
 /* PROVIDERS */
 
@@ -81,29 +79,23 @@ final _playerPopTimeProvider = StateProvider.autoDispose<int>(
   (ref) => 0,
 );
 
-final _playerParamsProvider = StateProvider.autoDispose.family<
-  PlayerRouteParameters,
-  PlayerRouteParameters
->(
+final _playerParamsProvider = StateProvider.autoDispose
+    .family<PlayerRouteParameters, PlayerRouteParameters>(
   (ref, params) => params,
 );
 
-final _videoProvider = FutureProvider.autoDispose.family<Uri?, PlayerRouteParameters>(
-  (ref, params) => ref.watch(apiProvider).getVideoUrl(
-    ref.watch(_playerParamsProvider(params).select((e) => e.episode)),
-  ),
+final _videoProvider =
+    FutureProvider.autoDispose.family<List<Uri>, PlayerRouteParameters>(
+  (ref, params) => ref.watch(apiProvider).getVideoUrls(
+        ref.watch(_playerParamsProvider(params).select((e) => e.episode)),
+      ),
 );
 
-
 /* MISC */
-
-
-
 
 /* WIDGETS */
 
 class PlayerRoute extends ConsumerStatefulWidget {
-
   const PlayerRoute({super.key});
 
   @override
@@ -111,7 +103,6 @@ class PlayerRoute extends ConsumerStatefulWidget {
 }
 
 class PlayerRouteState extends ConsumerState<PlayerRoute> {
-
   @override
   void initState() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
@@ -133,19 +124,20 @@ class PlayerRouteState extends ConsumerState<PlayerRoute> {
   }
 
   void _offsetCurrentEpBy(int offset, PlayerRouteParameters parameters) =>
-    ref.read(_playerParamsProvider(parameters).notifier).update(
-      (state) {
-        final newIndex = state.currentIndex! + offset;
-        return state.copyWith(
-          episode: state.anime!.episodes.elementAt(newIndex),
-          currentIndex: newIndex,
-        );
-      },
-    );
+      ref.read(_playerParamsProvider(parameters).notifier).update(
+        (state) {
+          final newIndex = state.currentIndex! + offset;
+          return state.copyWith(
+            episode: state.anime!.episodes.elementAt(newIndex),
+            currentIndex: newIndex,
+          );
+        },
+      );
 
   @override
   Widget build(BuildContext context) {
-    final parameters = ModalRoute.of(context)!.settings.arguments as PlayerRouteParameters;
+    final parameters =
+        ModalRoute.of(context)!.settings.arguments as PlayerRouteParameters;
     final theme = Theme.of(context);
     ref.watch(_playerPopTimeProvider);
     return GenericRoute(
@@ -169,60 +161,81 @@ class PlayerRouteState extends ConsumerState<PlayerRoute> {
       },
       body: Center(
         child: ref.watch(_videoProvider(parameters)).when(
-          loading: () => const CircularProgressIndicator(),
-          error: (err, stackTrace) => const LargeIcon(Boxicons.bxs_error_circle),
-          data: (videoUrl) {
-            if (videoUrl == null) {
-              return const LargeIcon(Boxicons.bxs_error_circle);
-            }
-            switch (parameters.playerType) {
-              case PlayerType.webview:
-                return WebviewPlayer(videoUrl: videoUrl);
-              case PlayerType.native:
-                return NativePlayer(
-                  videoUrl: videoUrl,
-                  playerRouteParameters: ref.watch(_playerParamsProvider(parameters)),
-                  onPrevious: 
-                    parameters.anime == null
-                    || (
-                      ref.watch(
-                        _playerParamsProvider(parameters).select((v) => v.currentIndex),
-                      ) ?? 0
-                    ) == 0
-                      ? null
-                      : () => _offsetCurrentEpBy(-1, parameters),
-                  onNext: 
-                    parameters.anime != null
-                    && (
-                      ref.watch(
-                        _playerParamsProvider(parameters).select((v) => v.currentIndex),
-                      ) ?? false
-                    ) != parameters.anime!.episodes.length - 1
-                      ? () {
-                        final currentEp = ref.read(_playerParamsProvider(parameters)).episode;
-                        _offsetCurrentEpBy(1, parameters);
-                        ref.read(historyProvider.notifier).addEntry(
-                          parameters.anime!.toJson(),
-                          currentEp,
-                          DateTime.now().millisecondsSinceEpoch,
-                        ).then(
-                          (success) => Fluttertoast.showToast(
-                            msg: context.tr.playerEpStatus(
-                              success,
-                              currentEp.episodeNumber,
-                            ),
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.BOTTOM,
-                            backgroundColor: theme.colorScheme.background,
-                            textColor: theme.textTheme.bodyMedium?.color,
-                          ),
-                        );
-                      }
-                      : null,
-                );
-            }
-          },
-        ),
+              loading: () => const CircularProgressIndicator(),
+              error: (err, stackTrace) {
+                if (kDebugMode) {
+                  print(err);
+                  print(stackTrace);
+                }
+                return const LargeIcon(Boxicons.bxs_error_circle);
+              },
+              data: (videoUrls) {
+                if (videoUrls.isEmpty) {
+                  return const LargeIcon(Boxicons.bxs_error_circle);
+                }
+                final selectedVideoUrl = videoUrls.first;
+                switch (parameters.playerType) {
+                  case PlayerType.webview:
+                    return WebviewPlayer(videoUrl: selectedVideoUrl);
+                  case PlayerType.native:
+                    return generateInAppWebView(
+                      HlsProviderData(
+                        videoUrl: selectedVideoUrl,
+                        assetBundle: DefaultAssetBundle.of(context),
+                      ),
+                    );
+                  /*return NativePlayer(
+                      videoUrl: selectedVideoUrl,
+                      playerRouteParameters:
+                          ref.watch(_playerParamsProvider(parameters)),
+                      onPrevious: parameters.anime == null ||
+                              (ref.watch(
+                                        _playerParamsProvider(parameters)
+                                            .select((v) => v.currentIndex),
+                                      ) ??
+                                      0) ==
+                                  0
+                          ? null
+                          : () => _offsetCurrentEpBy(-1, parameters),
+                      onNext: parameters.anime != null &&
+                              (ref.watch(
+                                        _playerParamsProvider(parameters)
+                                            .select((v) => v.currentIndex),
+                                      ) ??
+                                      false) !=
+                                  parameters.anime!.episodes.length - 1
+                          ? () {
+                              final currentEp = ref
+                                  .read(_playerParamsProvider(parameters))
+                                  .episode;
+                              _offsetCurrentEpBy(1, parameters);
+                              ref
+                                  .read(historyProvider.notifier)
+                                  .addEntry(
+                                    parameters.anime!.toJson(),
+                                    currentEp,
+                                    DateTime.now().millisecondsSinceEpoch,
+                                  )
+                                  .then(
+                                    (success) => Fluttertoast.showToast(
+                                      msg: context.tr.playerEpStatus(
+                                        success.toString(),
+                                        currentEp.episodeNumber,
+                                      ),
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.BOTTOM,
+                                      backgroundColor:
+                                          theme.colorScheme.background,
+                                      textColor:
+                                          theme.textTheme.bodyMedium?.color,
+                                    ),
+                                  );
+                            }
+                          : null,
+                    );*/
+                }
+              },
+            ),
       ),
     );
   }

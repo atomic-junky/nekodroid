@@ -9,8 +9,6 @@
 	".afs_ads",
 	".ad-placement",
 	"a",
-	"iframe",
-	"body > div:not(.video-js)",
 	"body > script",
 ].forEach(
 	sel => document.querySelectorAll(sel).forEach(
