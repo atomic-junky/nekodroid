@@ -1,9 +1,9 @@
 name: nekodroid
-description: Unofficial android client for neko-sama.fr.
-version: 1.0.0+1
+description: Unofficial android client for neko-sama.fr/animecat.net.
+version: 2.0.0
 homepage: https://github.com/zkayia/nekodroid
 issue_tracker: https://github.com/zkayia/nekodroid/issues
-repository: https://github.com/zkayia/nekodroid
+repository: https://github.com/holy-crusader-py/nekodroid
 
 
 publish_to: none
